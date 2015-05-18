@@ -22,7 +22,7 @@ to have Streen post critical status updates.
 }
 ```
 
-## API
+## Example
 ```javascript
 var os            = require('os');
 var ipc           = require('node-ipc');
