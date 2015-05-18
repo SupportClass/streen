@@ -16,11 +16,12 @@ to have Streen post critical status updates.
   "username": "botname",
   "password": "oauth:myOauthToken1234",
   "slack": {
-      "webhook": "https://hooks.slack.com/services/xxx/yyy/zzz",
-      "channel": "#somechannel"
-    }
+    "webhook": "https://hooks.slack.com/services/xxx/yyy/zzz",
+    "channel": "#somechannel"
+  }
 }
 ```
+- Run with `node index.js`
 
 ## Example
 ```javascript
