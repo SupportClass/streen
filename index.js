@@ -13,7 +13,6 @@ ipc.config.id        = 'streen';
 ipc.config.retry     = 1500;
 ipc.config.silent    = true;
 var siphonsByChannel = {};
-var channelQueue     = [];
 var client           = new irc.client({
     options: {
         exitOnError: false,
@@ -82,6 +81,13 @@ client
         console.error('Limitation:'.error, err);
         slack.send('I\'ve encountered a rate limitation! Check my logs.');
         ipc.server.broadcast('limitation', err);
+    })
+
+    .addListener('crash', function (message, stack) {
+        console.error(stack);
+        slack.send(format('I\'ve encountered an unhandled error, and will now exit:```%s```', stack));
+        ipc.server.broadcast('crash', {message: message, stack: stack});
+        process.exit(1);
     })
 
     .addListener('subscription', onSubscription)
