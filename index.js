@@ -48,6 +48,13 @@ process.on('SIGINT', function () {
     }, 1000);
 });
 
+// Monkey-patch the broken fastReconnect method.
+// This patch has a drawback of not being zero-downtime, but it's dang close.
+client.fastReconnect = function() {
+    this.disconnect();
+    this.connect();
+}.bind(client);
+
 // Connect to Twitch Chat and listen for various events.
 // Don't start the IPC server until we are connected to Twitch CHat.
 client.connect();
