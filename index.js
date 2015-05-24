@@ -162,6 +162,13 @@ function startIPCServer() {
                 }
             }
         });
+
+        // TODO: Make proper RPC with callbacks
+        ipc.server.on('timeout', function (data, socket) {
+            client.timeout(data.channel, data.username, data.seconds).then(function() {
+                ipc.server.emit(socket, 'timedOut', data);
+            });
+        });
     });
 
     ipc.server.start();
