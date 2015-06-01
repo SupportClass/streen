@@ -1,9 +1,10 @@
 #Streen
-Streen is a centralized interface for interacting with Twitch Chat. It operates via IPC.
+Streen is a centralized interface for interacting with Twitch Chat. It is essentially a wrapper for 
+[twitch-irc](https://github.com/twitch-irc/twitch-irc), and it operates via IPC.
 
 Streen is useful in situations where multiple processes all need to connect to Twitch Chat, 
 but the overhead of spinning up multiple IRC bots is not acceptable. Streen operates as a single bot and exposes
-an evented IPC interface via [node-ipc](https://github.com/RIAEvangelist/node-ipc).
+an evented IPC interface via [axon](https://github.com/tj/axon).
 
 ## Installation
 - Clone the repository
@@ -24,43 +25,7 @@ to have Streen post critical status updates.
 - Run with `node index.js`
 
 ## Example
-```javascript
-var os            = require('os');
-var ipc           = require('node-ipc');
-var CHANNELS      = ['teamfortresstv'];
-ipc.config.id     = 'siphon'; // You can change this to whatever you like.
-ipc.config.retry  = 1500;
-ipc.config.silent = true;     // node-ipc has built-in logging that, while comprehensive, is very spammy.
-
-// Uses TCP sockets on Windows, Unix sockets on Linux/Mac
-var connectFn = os.platform() === 'win32' ? ipc.connectToNet : ipc.connectTo;
-connectFn('streen', function () {
-    // Connect to Streen, then request to join an array of channels.
-    ipc.of.streen.on('connect', function () {
-        console.log('Connected to Streen');
-        ipc.of.streen.emit('join', CHANNELS);
-    });
-
-    ipc.of.streen.on('disconnect', function () {
-        console.log('Disconnected from Streen');
-    });
-
-    // This will only fire for channels that this code has asked to join.
-    ipc.of.streen.on('joined', function (channel) {
-        console.log('Joined channel:', channel);
-    });
-
-    // Listen for subscription and subAnniversary events.
-    // If this is a new subscription, "data.months" will be undefined.
-    ipc.of.streen.on('subscription', function (data) {
-        console.log('Subscription:', data.channel, data.username, data.months);
-    });
-
-    ipc.of.streen.on('chat', function (data) {
-        console.log('Chat:', data.channel, data.user, data.message);
-    });
-});
-```
+See [lfg-siphon](https://github.com/SupportClass/lfg-siphon) for an example implementation.
 
 ### License
 Streen is provided under the MIT license, which is available to read in the [LICENSE][] file.
