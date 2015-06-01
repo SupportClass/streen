@@ -160,7 +160,7 @@ function bindSockets() {
 
     rpcServer.expose('timeout', function (channel, username, seconds, fn) {
         ircClient.timeout(channel, username, seconds).then(function() {
-            fn(channel, username, seconds);
+            fn(null, null);
         });
     });
 
