@@ -147,13 +147,12 @@ function bindSockets() {
     // Streen does not join any channels on its own.
     // It waits for a Siphon to request that it join an array of channels.
     rpcServer.expose('join', function (channel, fn) {
+        resetHeartbeat(channel);
         if (ircClient.currentChannels.indexOf(channel) >= 0) {
             // Already in channel, invoke callback with the name
             fn(null, channel);
         } else {
-            ircClient.join('#' + channel).then(function () {
-                resetHeartbeat(channel);
-            });
+            ircClient.join('#' + channel);
             fn(null, null);
         }
     });
