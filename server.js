@@ -40,7 +40,9 @@ process.on('unhandledException', function (err) {
     log.error(err.stack);
     slack.status(format('I\'ve encountered an unhandled error, and will now exit:```%s```', err.stack));
     pubSock.send('crash', err);
-    process.exit(1);
+    setTimeout(function () {
+        process.exit(1);
+    }, 1000);
 });
 
 process.on('SIGINT', function () {
