@@ -31,11 +31,11 @@ See [lfg-siphon](https://github.com/SupportClass/lfg-siphon) for an example impl
 ## Slack Commands
 ### !channels
 Lists the current Twitch chat channels that Streen is listening to.
-[![channels command example](https://i.imgur.com/072ECjo.png)]
+![channels command example](https://i.imgur.com/072ECjo.png)
 
 ### !online
 Lists the online status of each Twitch stream that Streen is listening to.
-[![online command example](https://i.imgur.com/TMiOISh.png)]
+![online command example](https://i.imgur.com/TMiOISh.png)
 
 ### License
 Streen is provided under the MIT license, which is available to read in the [LICENSE][] file.
