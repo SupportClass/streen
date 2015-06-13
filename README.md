@@ -10,15 +10,16 @@ an evented IPC interface via [axon](https://github.com/tj/axon).
 - Clone the repository
 - From the directory you cloned Streen into, run `npm install --production`
 - Create `./config.json` with the desired Twitch `username` and `password`. Optionally, add a 
-[`slack.webhook`](https://my.slack.com/services/new/incoming-webhook/) URL and `slack.channel` 
-to have Streen post critical status updates.
+[`slack.botToken`](https://my.slack.com/services/new/bot) and `slack.statusChannel` 
+to have Streen post critical status updates and respond to commands. 
+[(Need an avatar for your bot?)](http://i.imgur.com/7LNvGeK.jpg)
 ```json
 {
   "username": "botname",
   "password": "oauth:myOauthToken1234",
   "slack": {
-    "webhook": "https://hooks.slack.com/services/xxx/yyy/zzz",
-    "channel": "#somechannel"
+    "botToken": "xoxb-xxxxxxxxxx-yyyyyyyyyy",
+    "statusChannel": "#somechannel"
   }
 }
 ```
@@ -26,6 +27,15 @@ to have Streen post critical status updates.
 
 ## Example
 See [lfg-siphon](https://github.com/SupportClass/lfg-siphon) for an example implementation.
+
+## Slack Commands
+### !channels
+Lists the current Twitch chat channels that Streen is listening to.
+[![channels command example](https://i.imgur.com/072ECjo.png)]
+
+### !online
+Lists the online status of each Twitch stream that Streen is listening to.
+[![online command example](https://i.imgur.com/TMiOISh.png)]
 
 ### License
 Streen is provided under the MIT license, which is available to read in the [LICENSE][] file.
