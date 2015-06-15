@@ -17,7 +17,8 @@ var HEARTBEAT_TIMEOUT = 15 * 1000;
 
 module.exports = {
     pubSock: pubSock,
-    rpcServer: rpcServer
+    rpcServer: rpcServer,
+    heartbeatTimeouts: heartbeatTimeouts
 };
 
 // Wait until we've defined module.exports before loading the Twitch IRC and Slack libs
