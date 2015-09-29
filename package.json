@@ -16,7 +16,7 @@
     "q": "^1.4.1",
     "request": "^2.57.0",
     "slack-client": "^1.4.1",
-    "twitch-irc": "^1.2.7",
+    "tmi.js": "0.0.23",
     "winston": "^1.0.0"
   },
   "engines": {
