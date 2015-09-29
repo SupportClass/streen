@@ -22,13 +22,11 @@ module.exports = {
 };
 
 // Wait until we've defined module.exports before loading the Twitch IRC and Slack libs
-var ircClient = require('./lib/twitch_irc');
+var chatClient = require('./lib/twitch_chat');
 var slack     = require('./lib/slack');
 
-//var db     = require('twitch-irc-db')({database: './data'});
-//var api    = require('twitch-irc-api');
-
-// twitch-irc can be leaky. This enables a sysadmin to pass '--expose-gc' and force a full GC cycle every 15 minutes.
+// The old twitch-irc lib could be leaky. TMI.js might not be. Just to be careful though,
+// this enables a sysadmin to pass '--expose-gc' and force a full GC cycle every 15 minutes.
 if (global.gc) {
     log.info('Running manual garbage collection every 15 minutes');
     setInterval(function () {
@@ -54,7 +52,7 @@ process.on('SIGINT', function () {
     }, 1000);
 });
 
-ircClient
+chatClient
     .addListener('connected', function () {
         if (socketsBound) {
             pubSock.send('connected');
@@ -74,17 +72,18 @@ function bindSockets() {
     // It waits for a Siphon to request that it join an array of channels.
     rpcServer.expose('join', function (channel, fn) {
         resetHeartbeat(channel);
-        if (ircClient.currentChannels.indexOf(channel) >= 0) {
+        if (chatClient.channels.indexOf('#' + channel) >= 0) {
             // Already in channel, invoke callback with the name
             fn(null, channel);
         } else {
-            ircClient.join('#' + channel);
-            fn(null, null);
+            chatClient.join('#' + channel).then(function() {
+                fn(null, null);
+            });
         }
     });
 
     rpcServer.expose('timeout', function (channel, username, seconds, fn) {
-        ircClient.timeout(channel, username, seconds).then(function() {
+        chatClient.timeout(channel, username, seconds).then(function() {
             fn(null, null);
         });
     });
@@ -102,7 +101,7 @@ function resetHeartbeat(channel, fn) {
     fn = fn || function () {};
     clearTimeout(heartbeatTimeouts[channel]);
     heartbeatTimeouts[channel] = setTimeout(function () {
-        ircClient.part('#' + channel).then(function () {
+        chatClient.part('#' + channel).then(function () {
             clearTimeout(heartbeatTimeouts[channel]);
             delete heartbeatTimeouts[channel];
             fn(null, channel);
