@@ -2,7 +2,7 @@
   "name": "streen",
   "description": "An IPC wrapper for twitch-irc",
   "main": "index.js",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "repository": {
     "type": "git",
     "url": "https://github.com/SupportClass/streen.git"
