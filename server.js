@@ -77,7 +77,6 @@ function bindSockets() {
             fn(null, channel);
         } else {
             chatClient.join('#' + channel).then(function() {
-                log.info('Joined channel:', channel);
                 fn(null, null);
             });
         }
