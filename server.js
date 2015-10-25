@@ -101,6 +101,7 @@ function resetHeartbeat(channel, fn) {
     fn = fn || function () {};
     clearTimeout(heartbeatTimeouts[channel]);
     heartbeatTimeouts[channel] = setTimeout(function () {
+        log.info('Heartbeat expired for', channel);
         chatClient.part('#' + channel).then(function () {
             clearTimeout(heartbeatTimeouts[channel]);
             delete heartbeatTimeouts[channel];
