@@ -89,6 +89,13 @@ function bindSockets() {
     });
 
     rpcServer.expose('heartbeat', function (channels, fn) {
+        // If we're not in any of these channels, join them.
+        channels.forEach(function(channel) {
+            if (chatClient.channels.indexOf('#' + channel) < 0) {
+                chatClient.join('#' + channel);
+            }
+        });
+
         channels.forEach(resetHeartbeat);
         fn(null, HEARTBEAT_TIMEOUT);
     });
@@ -97,15 +104,14 @@ function bindSockets() {
 // Siphons must send a heartbeat every HEARTBEAT_TIMEOUT seconds.
 // Otherwise, their channels are parted.
 // A siphon can miss no more than one consecutive heartbeat.
-function resetHeartbeat(channel, fn) {
-    fn = fn || function () {};
+function resetHeartbeat(channel) {
     clearTimeout(heartbeatTimeouts[channel]);
     heartbeatTimeouts[channel] = setTimeout(function () {
         log.info('Heartbeat expired for', channel);
         chatClient.part('#' + channel).then(function () {
             clearTimeout(heartbeatTimeouts[channel]);
             delete heartbeatTimeouts[channel];
-            fn(null, channel);
         });
     }, HEARTBEAT_TIMEOUT * 2 + 1000);
 }
+
