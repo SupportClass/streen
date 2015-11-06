@@ -16,11 +16,11 @@
     "q": "^1.4.1",
     "request": "^2.57.0",
     "slack-client": "^1.4.1",
-    "tmi.js": "0.0.24",
+    "tmi.js": "0.0.23",
     "winston": "^1.0.0"
   },
   "engines": {
-    "node": ">=4"
+    "node": ">= 0.12.0"
   },
   "files": [
     "AUTHORS",
