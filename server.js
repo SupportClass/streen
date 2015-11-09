@@ -68,8 +68,11 @@ function bindSockets() {
 
     socketsBound = true;
 
-    // Streen does not join any channels on its own.
-    // It waits for a Siphon to request that it join an array of channels.
+    /**
+     * Join a Twitch chat channel.
+     * @param {String} channel - The name of the channel to join. Do not include a leading "#" character.
+     * @param {Function} fn - The callback to execute after successfully joining the channel.
+     */
     rpcServer.expose('join', function (channel, fn) {
         resetHeartbeat(channel);
         if (chatClient.channels.indexOf('#' + channel) >= 0) {
@@ -82,12 +85,36 @@ function bindSockets() {
         }
     });
 
+    /**
+     * Send a message to a Twitch chat channel as the user specified in the config file.
+     * @param {String} channel - The name of the channel to send a message to. Do not include a leading "#" character.
+     * @param {String} message - The message to send.
+     * @param {Function} fn - The callback to execute after successfully sending the message.
+     */
+    rpcServer.expose('say', function (channel, message, fn) {
+        chatClient.say(channel, message).then(function() {
+            fn(null, null);
+        });
+    });
+
+    /**
+     * Timeout a user in a Twitch chat channel for a given number of seconds.
+     * @param {String} channel - The name of the channel to execute the timeout command in. Do not include a leading "#" character.
+     * @param {String} username - The name of the user to timeout.
+     * @param {Number} seconds - The number of seconds to time the user out for.
+     * @param {Function} fn - The callback to execute after successfully timing out the user.
+     */
     rpcServer.expose('timeout', function (channel, username, seconds, fn) {
         chatClient.timeout(channel, username, seconds).then(function() {
             fn(null, null);
         });
     });
 
+    /**
+     * Tell Streen that you wish for it to remain in this array of channels.
+     * @param {Array.<string>} channels - The array of channel names. Do not include leading "#" characters.
+     * @param {heartbeatCallback} fb - The callback to execute after the heartbeat has been registered.
+     */
     rpcServer.expose('heartbeat', function (channels, fn) {
         // If we're not in any of these channels, join them.
         channels.forEach(function(channel) {
@@ -99,6 +126,17 @@ function bindSockets() {
         channels.forEach(resetHeartbeat);
         fn(null, HEARTBEAT_TIMEOUT);
     });
+
+    /**
+     * The type of callback to execute after a successful heartbeat request.
+     * @callback heartbeatCallback
+     * @param {Object} err - The error returned, if any.
+     * @param {Number} heartbeatTimeout - How long to wait (in milliseconds) before sending the next heartbeat.
+     *                                    Heartbeats can be sent earlier or later if needed.
+     *                                    A siphon has up to (heartbeatTimeout * 2 + 1000) milliseconds to
+     *                                    send another heartbeat before it times out. In other words, it can only miss
+     *                                    one consecutive heartbeat.
+     */
 }
 
 // Siphons must send a heartbeat every HEARTBEAT_TIMEOUT seconds.
