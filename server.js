@@ -111,6 +111,17 @@ function bindSockets() {
     });
 
     /**
+     * Get the list of chat mods for a Twitch channel.
+     * @param {String} channel - The Twitch channel to get a list of chat mods from
+     * @param {Function} fn - The callback to execute after successfully obtaining the list of chat mods.
+     */
+    rpcServer.expose('mods', function (channel, fn) {
+        chatClient.mods(channel).then(function(mods) {
+            fn(null, mods);
+        });
+    });
+
+    /**
      * Tell Streen that you wish for it to remain in this array of channels.
      * @param {Array.<string>} channels - The array of channel names. Do not include leading "#" characters.
      * @param {heartbeatCallback} fb - The callback to execute after the heartbeat has been registered.
