@@ -16,11 +16,7 @@ const PUB_PORT = config.get('pubPort') || 9455;
 const RPC_PORT = config.get('rpcPort') || 9456;
 const HEARTBEAT_TIMEOUT = 15 * 1000;
 
-module.exports = {
-	pubSock,
-	rpcServer,
-	heartbeatTimeouts
-};
+module.exports = {pubSock, rpcServer, heartbeatTimeouts};
 
 // Wait until we've defined module.exports before loading the Twitch IRC and Slack libs
 const chatClient = require('./lib/twitch_chat');
@@ -44,7 +40,7 @@ process.on('SIGINT', () => {
 	}, 1000);
 });
 
-chatClient.addListener('connected', () => {
+chatClient.on('connected', () => {
 	if (socketsBound) {
 		pubSock.send('connected');
 	} else {
@@ -90,7 +86,8 @@ function bindSockets() {
 
 	/**
 	 * Timeout a user in a Twitch chat channel for a given number of seconds.
-	 * @param {String} channel - The name of the channel to execute the timeout command in. Do not include a leading "#" character.
+	 * @param {String} channel - The name of the channel to execute the timeout command in.
+	 * Do not include a leading "#" character.
 	 * @param {String} username - The name of the user to timeout.
 	 * @param {Number} seconds - The number of seconds to time the user out for.
 	 * @param {Function} fn - The callback to execute after successfully timing out the user.
@@ -134,10 +131,10 @@ function bindSockets() {
 	 * @callback heartbeatCallback
 	 * @param {Object} err - The error returned, if any.
 	 * @param {Number} heartbeatTimeout - How long to wait (in milliseconds) before sending the next heartbeat.
-	 *                                    Heartbeats can be sent earlier or later if needed.
-	 *                                    A siphon has up to (heartbeatTimeout * 2 + 1000) milliseconds to
-	 *                                    send another heartbeat before it times out. In other words, it can only miss
-	 *                                    one consecutive heartbeat.
+	 * Heartbeats can be sent earlier or later if needed.
+	 * A siphon has up to (heartbeatTimeout * 2 + 1000) milliseconds to
+	 * send another heartbeat before it times out. In other words, it can only miss
+	 * one consecutive heartbeat.
 	 */
 }
 
