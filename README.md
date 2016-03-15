@@ -1,4 +1,4 @@
-#Streen
+#Streen [![Build Status](https://travis-ci.org/SupportClass/streen.svg?branch=master)](https://travis-ci.org/SupportClass/streen)
 Streen is a centralized interface for interacting with Twitch Chat. It is essentially a wrapper for 
 [twitch-irc](https://github.com/twitch-irc/twitch-irc), and it operates via IPC.
 

@@ -1,0 +1,13 @@
+sudo: false
+language: node_js
+node_js:
+- v4
+- v5
+env:
+  global:
+  - secure: D+TF95jKn96hyllmJUwPGmezwHHMZVIO00A++pqrJdQmoC4G70AM/ulu2yh24nKCbWzv5NHozkx4PGPFfRiRt/lI6t19wc1dugOEh56exqKl43eH38Sd4+PhSVfDYWUiVQo51ebhfOf8Dseq4yZVrcNeHNjiMOC/sNcIkiWV3Kk=
+  - secure: UwChFGBKeMw7bmrrvZgSvYyKoD8BcGME1HQTuMT1TIGBzh8DPk6Go53enpNe4nX2mrN315In2KR7gmDq0zY6ghp0Uq8A3UgfELKGfEUD5vN7GK6p/5n+rqGhYGXmslLxNfeyFoyO/WAyHJQgS0CybYpVjdOx6BNQKpi5U4LTzdc=
+notifications:
+  email: false
+  slack:
+    secure: ezTt+YKE1kxJPRFthZ7UTZuCyBI2Jw1CmiTeUKaKD3mDSc2jhUh70hjrG0kxykYKuomkYlS/fPxWEHSK5X28XtA18tEZqjOnDG+YNCizFIat6Uq8dwUPhTJ/WAnq7CaSpH29uq90xNNWk3MAbqJMpHdYkWfFMHGkIuGDblcSjcI=
