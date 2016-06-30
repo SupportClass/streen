@@ -62,11 +62,11 @@ function bindSockets() {
 	 */
 	rpcServer.expose('join', (channel, fn) => {
 		resetHeartbeat(channel);
-		if (chatClient.channels.indexOf(`#${channel}`) >= 0) {
+		if (chatClient.channels.indexOf(channel) >= 0) {
 			// Already in channel, invoke callback with the name
 			fn(null, channel);
 		} else {
-			chatClient.join(`#${channel}`).then(() => {
+			chatClient.join(channel).then(() => {
 				fn(null, null);
 			});
 		}
@@ -117,8 +117,8 @@ function bindSockets() {
 	rpcServer.expose('heartbeat', (channels, fn) => {
 		// If we're not in any of these channels, join them.
 		channels.forEach(channel => {
-			if (chatClient.channels.indexOf(`#${channel}`) < 0) {
-				chatClient.join(`#${channel}`);
+			if (chatClient.channels.indexOf(channel) < 0) {
+				chatClient.join(channel);
 			}
 		});
 
@@ -145,7 +145,7 @@ function resetHeartbeat(channel) {
 	clearTimeout(heartbeatTimeouts[channel]);
 	heartbeatTimeouts[channel] = setTimeout(() => {
 		log.info('Heartbeat expired for', channel);
-		chatClient.part(`#${channel}`).then(() => {
+		chatClient.part(channel).then(() => {
 			clearTimeout(heartbeatTimeouts[channel]);
 			delete heartbeatTimeouts[channel];
 		});
