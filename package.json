@@ -10,12 +10,12 @@
   "bugs": "https://github.com/SupportClass/streen/issues",
   "license": "MIT",
   "dependencies": {
+    "@slack/client": "^3.5.1",
     "axon": "^2.0.2",
     "axon-rpc": "0.0.3",
+    "bluebird": "^3.4.1",
     "hi-config": "^1.0.6",
-    "q": "^1.4.1",
-    "request": "^2.57.0",
-    "slack-client": "^1.5.1",
+    "request-promise": "^4.0.2",
     "tmi.js": "^1.1.1",
     "winston": "^1.0.0"
   },
