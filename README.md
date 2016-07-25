@@ -15,8 +15,12 @@ to have Streen post critical status updates and respond to commands.
 [(Need an avatar for your bot?)](http://i.imgur.com/7LNvGeK.jpg)
 ```json
 {
-  "username": "botname",
-  "password": "oauth:myOauthToken1234",
+  "twitch": {
+    "username": "botname",
+    "password": "oauth:myOauthToken1234",
+    "clientId": "abcdefghijk"
+  }
+  
   "slack": {
     "botToken": "xoxb-xxxxxxxxxx-yyyyyyyyyy",
     "statusChannel": "#somechannel"
