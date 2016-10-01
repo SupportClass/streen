@@ -10,7 +10,7 @@
   "bugs": "https://github.com/SupportClass/streen/issues",
   "license": "MIT",
   "dependencies": {
-    "@slack/client": "^3.5.1",
+    "@slack/client": "^3.6.0",
     "axon": "^2.0.2",
     "axon-rpc": "0.0.3",
     "bluebird": "^3.4.1",
