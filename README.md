@@ -19,15 +19,14 @@ to have Streen post critical status updates and respond to commands.
     "username": "botname",
     "password": "oauth:myOauthToken1234",
     "clientId": "abcdefghijk"
-  }
-  
+  },
   "slack": {
     "botToken": "xoxb-xxxxxxxxxx-yyyyyyyyyy",
     "statusChannel": "#somechannel"
   }
 }
 ```
-- Run with `node index.js`
+- Run with `node server.js`
 
 ## Example
 See [lfg-siphon](https://github.com/SupportClass/lfg-siphon) for an example implementation.
