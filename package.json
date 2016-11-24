@@ -38,6 +38,6 @@
   },
   "scripts": {
     "static": "eslint server.js lib/**/*.js",
-    "test": "npm run static && ava"
+    "test": "npm run static && ava --timeout=20s"
   }
 }
