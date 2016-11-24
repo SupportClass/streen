@@ -1,8 +1,7 @@
 'use strict';
 
+const config = require('./lib/config');
 const log = require('./lib/log');
-const config = require('hi-config');
-config.load('config.json');
 const format = require('util').format;
 const rpc = require('axon-rpc');
 const axon = require('axon');
@@ -12,8 +11,8 @@ const rpcServer = new rpc.Server(rep);
 
 let socketsBound = false;
 const heartbeatTimeouts = {};
-const PUB_PORT = config.get('pubPort') || 9455;
-const RPC_PORT = config.get('rpcPort') || 9456;
+const PUB_PORT = config.get('pubPort');
+const RPC_PORT = config.get('rpcPort');
 const HEARTBEAT_TIMEOUT = 15 * 1000;
 
 module.exports = {pubSock, rpcServer, heartbeatTimeouts};
@@ -149,6 +148,5 @@ function resetHeartbeat(channel) {
 			clearTimeout(heartbeatTimeouts[channel]);
 			delete heartbeatTimeouts[channel];
 		});
-	}, HEARTBEAT_TIMEOUT * 2 + 1000);
+	}, (HEARTBEAT_TIMEOUT * 2) + 1000);
 }
-
