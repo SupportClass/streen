@@ -3,19 +3,20 @@
 const config = require('./lib/config');
 const log = require('./lib/log');
 const format = require('util').format;
-const rpc = require('axon-rpc');
-const axon = require('axon');
-const rep = axon.socket('rep');
-const pubSock = axon.socket('pub');
-const rpcServer = new rpc.Server(rep);
+const app = require('express')();
+const server = require('http').Server(app); // eslint-disable-line new-cap
+const io = require('socket.io')(server);
 
-let socketsBound = false;
+server.listen(config.get('port'));
+
+app.get('/', (req, res) => {
+	res.sendStatus(200);
+});
+
 const heartbeatTimeouts = {};
-const PUB_PORT = config.get('pubPort');
-const RPC_PORT = config.get('rpcPort');
 const HEARTBEAT_TIMEOUT = 15 * 1000;
 
-module.exports = {pubSock, rpcServer, heartbeatTimeouts};
+module.exports = {app, io, heartbeatTimeouts};
 
 // Wait until we've defined module.exports before loading the Twitch IRC and Slack libs
 const chatClient = require('./lib/twitch_chat');
@@ -25,7 +26,7 @@ const slack = require('./lib/slack');
 process.on('unhandledException', err => {
 	log.error(err.stack);
 	slack.status(format('I\'ve encountered an unhandled error, and will now exit:```%s```', err.stack));
-	pubSock.send('crash', err);
+	io.emit('crash', err);
 	setTimeout(() => {
 		process.exit(1);
 	}, 1000);
@@ -40,27 +41,28 @@ process.on('SIGINT', () => {
 });
 
 chatClient.on('connected', () => {
-	if (socketsBound) {
-		pubSock.send('connected');
-	} else {
-		bindSockets();
-	}
+	io.emit('connected');
 });
 
-function bindSockets() {
-	pubSock.bind(PUB_PORT);
-	rep.bind(RPC_PORT);
-	pubSock.send('connected');
-
-	socketsBound = true;
+io.on('connection', socket => {
+	log.trace('Socket %s connected.', socket.id);
 
 	/**
 	 * Join a Twitch chat channel.
 	 * @param {String} channel - The name of the channel to join. Do not include a leading "#" character.
 	 * @param {Function} fn - The callback to execute after successfully joining the channel.
 	 */
-	rpcServer.expose('join', (channel, fn) => {
+	socket.on('join', (channel, fn) => {
+		log.debug('Socket %s requesting to join Twitch chat channel "%s"', socket.id, channel);
 		resetHeartbeat(channel);
+
+		// NOTE 2/1/2017: Rooms are only left when the socket itself is closed. Is this okay? Is this a leak?
+		const roomName = `channel:${channel}`;
+		if (Object.keys(socket.rooms).indexOf(roomName) < 0) {
+			log.trace('Socket %s joined room:', socket.id, roomName);
+			socket.join(roomName);
+		}
+
 		if (chatClient.channels.indexOf(channel) >= 0) {
 			// Already in channel, invoke callback with the name
 			fn(null, channel);
@@ -77,7 +79,7 @@ function bindSockets() {
 	 * @param {String} message - The message to send.
 	 * @param {Function} fn - The callback to execute after successfully sending the message.
 	 */
-	rpcServer.expose('say', (channel, message, fn) => {
+	socket.on('say', (channel, message, fn) => {
 		chatClient.say(channel, message).then(() => {
 			fn(null, null);
 		});
@@ -91,7 +93,7 @@ function bindSockets() {
 	 * @param {Number} seconds - The number of seconds to time the user out for.
 	 * @param {Function} fn - The callback to execute after successfully timing out the user.
 	 */
-	rpcServer.expose('timeout', (channel, username, seconds, fn) => {
+	socket.on('timeout', (channel, username, seconds, fn) => {
 		chatClient.timeout(channel, username, seconds).then(() => {
 			fn(null, null);
 		});
@@ -102,7 +104,7 @@ function bindSockets() {
 	 * @param {String} channel - The Twitch channel to get a list of chat mods from
 	 * @param {Function} fn - The callback to execute after successfully obtaining the list of chat mods.
 	 */
-	rpcServer.expose('mods', (channel, fn) => {
+	socket.on('mods', (channel, fn) => {
 		chatClient.mods(channel).then(mods => {
 			fn(null, mods);
 		});
@@ -113,7 +115,7 @@ function bindSockets() {
 	 * @param {Array.<string>} channels - The array of channel names. Do not include leading "#" characters.
 	 * @param {heartbeatCallback} fb - The callback to execute after the heartbeat has been registered.
 	 */
-	rpcServer.expose('heartbeat', (channels, fn) => {
+	socket.on('heartbeat', (channels, fn) => {
 		// If we're not in any of these channels, join them.
 		channels.forEach(channel => {
 			if (chatClient.channels.indexOf(channel) < 0) {
@@ -135,11 +137,15 @@ function bindSockets() {
 	 * send another heartbeat before it times out. In other words, it can only miss
 	 * one consecutive heartbeat.
 	 */
-}
+});
 
-// Siphons must send a heartbeat every HEARTBEAT_TIMEOUT seconds.
-// Otherwise, their channels are parted.
-// A siphon can miss no more than one consecutive heartbeat.
+/**
+ * Siphons must send a heartbeat every HEARTBEAT_TIMEOUT seconds.
+ * Otherwise, their channels are parted.
+ * A siphon can miss no more than one consecutive heartbeat.
+ * @param {string} channel - The channel to reset the heartbeat for.
+ * @returns {undefined}
+ */
 function resetHeartbeat(channel) {
 	clearTimeout(heartbeatTimeouts[channel]);
 	heartbeatTimeouts[channel] = setTimeout(() => {

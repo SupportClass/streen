@@ -1,25 +1,18 @@
 import test from 'ava';
 
+const config = require('../lib/config');
 const CHANNELS = ['ghentbot'];
-const SUB_PORT = 9455;
-const RPC_PORT = 9456;
-
-const axon = require('axon');
-const rpc = require('axon-rpc');
-const req = axon.socket('req');
-const subSock = axon.socket('sub');
-const rpcClient = new rpc.Client(req);
+let socket;
 let tmiClient;
 
 test.cb.before(t => {
 	require('../server.js');
-	subSock.connect(SUB_PORT, '127.0.0.1');
-	req.connect(RPC_PORT, '127.0.0.1');
+	socket = require('socket.io-client')(`http://localhost:${config.get('port')}`);
 
-	let subSockConnected = false;
+	let socketConnected = false;
 	let tmiClientConnected = false;
-	subSock.on('connect', () => {
-		subSockConnected = true;
+	socket.on('connect', () => {
+		socketConnected = true;
 		checkDone();
 	});
 
@@ -35,18 +28,19 @@ test.cb.before(t => {
 	}
 
 	function checkDone() {
-		if (subSockConnected && tmiClientConnected) {
+		if (socketConnected && tmiClientConnected) {
+			console.log('Done with setup, commencing tests.');
 			t.end();
 		}
 	}
 });
 
-test.cb('join channels', t => {
+test.serial.cb('join channels', t => {
 	t.plan(1);
 
 	CHANNELS.forEach(channel => {
 		console.log('asking to join:', channel);
-		rpcClient.call('join', channel, (err, alreadyJoined) => {
+		socket.emit('join', channel, (err, alreadyJoined) => {
 			console.log('join callback for:', channel);
 
 			if (err) {
@@ -66,19 +60,17 @@ test.cb('join channels', t => {
 test.serial.cb('subscription events', t => {
 	t.plan(2);
 
-	subSock.once('message', (msg, data) => {
-		if (msg.toString() === 'subscription') {
-			t.is(typeof data.ts, 'number');
-			t.deepEqual(data, {
-				channel: 'ghentbot',
-				username: 'sub_test',
-				resub: false,
-				method: {prime: false},
-				months: 1,
-				ts: data.ts
-			});
-			t.end();
-		}
+	socket.once('subscription', data => {
+		t.is(typeof data.ts, 'number');
+		t.deepEqual(data, {
+			channel: 'ghentbot',
+			username: 'sub_test',
+			resub: false,
+			method: {prime: false},
+			months: 1,
+			ts: data.ts
+		});
+		t.end();
 	});
 
 	tmiClient.emit('subscription', 'ghentbot', 'sub_test', {prime: false});
@@ -87,20 +79,32 @@ test.serial.cb('subscription events', t => {
 test.serial.cb('resubscription events', t => {
 	t.plan(2);
 
-	subSock.once('message', (msg, data) => {
-		if (msg.toString() === 'subscription') {
-			t.is(typeof data.ts, 'number');
-			t.deepEqual(data, {
-				channel: 'ghentbot',
-				username: 'resub_test',
-				resub: true,
-				months: 5,
-				message: 'test message',
-				ts: data.ts
-			});
-			t.end();
-		}
+	socket.once('subscription', data => {
+		t.is(typeof data.ts, 'number');
+		t.deepEqual(data, {
+			channel: 'ghentbot',
+			username: 'resub_test',
+			resub: true,
+			months: 5,
+			message: 'test message',
+			ts: data.ts
+		});
+		t.end();
 	});
 
 	tmiClient.emit('resub', 'ghentbot', 'resub_test', 5, 'test message');
+});
+
+test.serial.cb('room isolation', t => {
+	t.plan(0);
+
+	socket.once('subscription', () => {
+		t.fail();
+	});
+
+	setTimeout(() => {
+		t.end();
+	}, 100);
+
+	tmiClient.emit('subscription', 'channel_this_socket_isnt_in', 'sub_test', {prime: false});
 });
