@@ -1,3 +1,19 @@
+<a name="0.5.0"></a>
+# [0.5.0](https://github.com/SupportClass/streen/compare/v0.4.0...v0.5.0) (2017-02-01)
+
+
+### Features
+
+* add pre-shared key authentication ([e78410a](https://github.com/SupportClass/streen/commit/e78410a))
+* **api:** use object for `chat` and `timeout` events ([c99f945](https://github.com/SupportClass/streen/commit/c99f945))
+
+
+### BREAKING CHANGES
+
+* api: The `chat` and `timeout` events now pass a single object as their argument.
+
+
+
 <a name="0.4.0"></a>
 # [0.4.0](https://github.com/SupportClass/streen/compare/v0.3.2...v0.4.0) (2017-02-01)
 
