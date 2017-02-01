@@ -15,6 +15,7 @@ app.get('/', (req, res) => {
 
 const heartbeatTimeouts = {};
 const HEARTBEAT_TIMEOUT = 15 * 1000;
+const authenticatedSockets = new WeakSet();
 
 module.exports = {app, io, heartbeatTimeouts};
 
@@ -46,6 +47,29 @@ chatClient.on('connected', () => {
 
 io.on('connection', socket => {
 	log.trace('Socket %s connected.', socket.id);
+
+	socket.on('authenticate', (key, fn) => {
+		log.debug('Socket %s authenticating with key "%s"', socket.id, key);
+
+		if (authenticatedSockets.has(socket)) {
+			log.debug('Already authenticated');
+			fn('already authenticated');
+			return;
+		}
+
+		if (key === config.get('secretKey')) {
+			log.debug('Accepted key');
+			setupAuthenticatedSocket(socket);
+			fn(null);
+		} else {
+			log.debug('Rejected key "%s"', key);
+			fn('invalid key');
+		}
+	});
+});
+
+function setupAuthenticatedSocket(socket) {
+	authenticatedSockets.add(socket);
 
 	/**
 	 * Join a Twitch chat channel.
@@ -137,7 +161,7 @@ io.on('connection', socket => {
 	 * send another heartbeat before it times out. In other words, it can only miss
 	 * one consecutive heartbeat.
 	 */
-});
+}
 
 /**
  * Siphons must send a heartbeat every HEARTBEAT_TIMEOUT seconds.

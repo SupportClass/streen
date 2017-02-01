@@ -2,16 +2,16 @@ import test from 'ava';
 
 const config = require('../lib/config');
 const CHANNELS = ['ghentbot'];
-let socket;
+let globalSocket;
 let tmiClient;
 
 test.cb.before(t => {
 	require('../server.js');
-	socket = require('socket.io-client')(`http://localhost:${config.get('port')}`);
+	globalSocket = require('socket.io-client')(`http://localhost:${config.get('port')}`);
 
 	let socketConnected = false;
 	let tmiClientConnected = false;
-	socket.on('connect', () => {
+	globalSocket.on('connect', () => {
 		socketConnected = true;
 		checkDone();
 	});
@@ -35,12 +35,58 @@ test.cb.before(t => {
 	}
 });
 
+test.cb('reject invalid authentication key', t => {
+	t.plan(1);
+
+	const socket = require('socket.io-client')(`http://localhost:${config.get('port')}`);
+	socket.emit('authenticate', 'invalid_key', errorMsg => {
+		t.is(errorMsg, 'invalid key');
+		t.end();
+	});
+});
+
+test.cb('disallow commands before authentication', t => {
+	t.plan(1);
+
+	const socket = require('socket.io-client')(`http://localhost:${config.get('port')}`);
+	socket.emit('join', 'test', () => {
+		t.fail();
+	});
+
+	setTimeout(() => {
+		t.pass();
+		t.end();
+	}, 100);
+});
+
+test.serial.cb('accept valid authentication key', t => {
+	t.plan(1);
+
+	globalSocket.emit('authenticate', 'supersecret', errorMsg => {
+		if (errorMsg) {
+			return t.fail(errorMsg);
+		}
+
+		t.pass();
+		t.end();
+	});
+});
+
+test.serial.cb('disallow multiple authentication from a single socket', t => {
+	t.plan(1);
+
+	globalSocket.emit('authenticate', 'supersecret', errorMsg => {
+		t.is(errorMsg, 'already authenticated');
+		t.end();
+	});
+});
+
 test.serial.cb('join channels', t => {
 	t.plan(1);
 
 	CHANNELS.forEach(channel => {
 		console.log('asking to join:', channel);
-		socket.emit('join', channel, (err, alreadyJoined) => {
+		globalSocket.emit('join', channel, (err, alreadyJoined) => {
 			console.log('join callback for:', channel);
 
 			if (err) {
@@ -60,7 +106,7 @@ test.serial.cb('join channels', t => {
 test.serial.cb('subscription events', t => {
 	t.plan(2);
 
-	socket.once('subscription', data => {
+	globalSocket.once('subscription', data => {
 		t.is(typeof data.ts, 'number');
 		t.deepEqual(data, {
 			channel: 'ghentbot',
@@ -79,7 +125,7 @@ test.serial.cb('subscription events', t => {
 test.serial.cb('resubscription events', t => {
 	t.plan(2);
 
-	socket.once('subscription', data => {
+	globalSocket.once('subscription', data => {
 		t.is(typeof data.ts, 'number');
 		t.deepEqual(data, {
 			channel: 'ghentbot',
@@ -98,7 +144,7 @@ test.serial.cb('resubscription events', t => {
 test.serial.cb('room isolation', t => {
 	t.plan(0);
 
-	socket.once('subscription', () => {
+	globalSocket.once('subscription', () => {
 		t.fail();
 	});
 
