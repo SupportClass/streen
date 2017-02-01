@@ -20,6 +20,7 @@ node_modules/
 
 # Code coverage results
 /coverage
+.nyc_output
 
 # Don't ignore .empty_directory files
 !.empty_directory

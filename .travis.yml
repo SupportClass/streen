@@ -12,6 +12,9 @@ notifications:
   slack:
     secure: ezTt+YKE1kxJPRFthZ7UTZuCyBI2Jw1CmiTeUKaKD3mDSc2jhUh70hjrG0kxykYKuomkYlS/fPxWEHSK5X28XtA18tEZqjOnDG+YNCizFIat6Uq8dwUPhTJ/WAnq7CaSpH29uq90xNNWk3MAbqJMpHdYkWfFMHGkIuGDblcSjcI=
 
+after_success:
+    - './node_modules/.bin/nyc report --reporter=text-lcov | ./node_modules/.bin/coveralls'
+
 cache:
   apt: true
   directories:
