@@ -2,10 +2,10 @@
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)  
 
 Streen is a centralized interface for interacting with Twitch Chat. It is essentially a wrapper for 
-[twitch-irc](https://github.com/twitch-irc/twitch-irc), and it operates via Socket.IO websockets.
+[tmi.js](https://docs.tmijs.org/), and it operates via Socket.IO websockets.
 
 Streen is useful in situations where multiple processes all need to connect to Twitch Chat, 
-but the overhead of spinning up multiple and managing multiple IRC bots is not acceptable. 
+but the overhead of spinning up multiple and managing multiple chat bots is not acceptable. 
 Streen operates as a single bot and exposes a websocket API.
 
 ## Installation
