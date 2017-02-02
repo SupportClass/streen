@@ -9,6 +9,18 @@ but the overhead of spinning up multiple and managing multiple IRC bots is not a
 Streen operates as a single bot and exposes a websocket API.
 
 ## Installation
+- [Deploying to Heroku (recommended)](#deploying-to-heroku)
+- [Manual installation](#manual-installation)
+
+### Deploying to Heroku
+- Click the "Deploy to Heroku" button at the top of this README.
+- Fill out the form. Be sure to provide all required config variables.
+- If using a free dyno (the default), you'll need to prevent it from sleeping. 
+This can be done by periodically pinging the dyno. [Apex Ping](https://ping.apex.sh/) and 
+[Pingdom](https://www.pingdom.com/) are two options for this, but there are many ways to prevent a free web dyno from 
+sleeping.
+
+### Manual Installation
 - Clone the repository
 - From the directory you cloned Streen into, run `npm install --production`
 - Create `./config.json` with the desired `twitch.username`, `twitch.password`, and `secretKey`. 
