@@ -1,0 +1,44 @@
+{
+	"name": "Streen",
+	"description": "A centralized WebSocket Twitch Chat interface",
+	"repository": "https://github.com/SupportClass/streen",
+	"logo": "https://i.imgur.com/7LNvGeK.jpg",
+	"keywords": [
+		"node",
+		"twitch",
+		"chat",
+		"relay",
+		"socket",
+		"websocket",
+		"socket.io"
+	],
+	"formation": {
+		"web": {
+			"quantity": 1,
+			"size": "free"
+		}
+	},
+	"env": {
+		"SECRET_KEY": {
+			"description": "A secret key, used as a pre-shared key to authenticate clients.",
+			"generator": "secret"
+		},
+		"TWITCH_CLIENT_ID": {
+			"description": "A Twitch API ClientID, used for making some API calls."
+		},
+		"TWITCH_USERNAME": {
+			"description": "The Twitch username of the account to connect to chat as."
+		},
+		"TWITCH_PASSWORD": {
+			"description": "The password of the Twitch account to connect to chat as."
+		},
+		"SLACK_BOT_TOKEN": {
+			"description": " The token of a Slack bot, used to post status messages.",
+			"required": false
+		},
+		"SLACK_STATUS_CHANNEL": {
+			"description": "(Optional) The Slack channel in which to post status updates.",
+			"required": false
+		}
+	}
+}
