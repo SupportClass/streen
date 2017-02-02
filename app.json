@@ -33,7 +33,7 @@
 			"description": "The password of the Twitch account to connect to chat as."
 		},
 		"SLACK_BOT_TOKEN": {
-			"description": " The token of a Slack bot, used to post status messages.",
+			"description": "(Optional) The token of a Slack bot, used to post status messages.",
 			"required": false
 		},
 		"SLACK_STATUS_CHANNEL": {
