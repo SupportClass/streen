@@ -37,7 +37,7 @@ to have Streen post critical status updates and respond to commands.
   },
   "slack": {
     "botToken": "xoxb-xxxxxxxxxx-yyyyyyyyyy",
-    "statusChannel": "#somechannel"
+    "statusChannel": "somechannel"
   },
   "port": 8232,
   "logLevel": "info",
