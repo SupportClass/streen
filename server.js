@@ -21,7 +21,17 @@ module.exports = {app, io, heartbeatTimeouts};
 
 // Wait until we've defined module.exports before loading the Twitch IRC and Slack libs
 const chatClient = require('./lib/twitch_chat');
-const slack = require('./lib/slack');
+const slack = (function () {
+	if (config.get('slack.botToken')) {
+		return require('./lib/slack');
+	}
+
+	// If the "slack" property is not present in the config, just return function stubs and do nothing.
+	log.info('No "slack" property found in config.json, will not post status to Slack');
+	return {
+		status() {}
+	};
+})();
 
 // Oh no
 process.on('unhandledException', err => {

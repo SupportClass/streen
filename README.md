@@ -58,6 +58,10 @@ Lists the current Twitch chat channels that Streen is listening to.
 Lists the online status of each Twitch stream that Streen is listening to.  
 ![online command example](https://i.imgur.com/TMiOISh.png)
 
+### !notifyoffline <channel>
+Notifies you when `channel` stops streaming. Useful for planning maintenance or remembering
+to speak to someone when they go offline for the day.
+
 ### License
 Streen is provided under the MIT license, which is available to read in the [LICENSE][] file.
 [license]: LICENSE
