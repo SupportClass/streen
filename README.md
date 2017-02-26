@@ -58,7 +58,7 @@ Lists the current Twitch chat channels that Streen is listening to.
 Lists the online status of each Twitch stream that Streen is listening to.  
 ![online command example](https://i.imgur.com/TMiOISh.png)
 
-### !notifyoffline <channel>
+### !notifyoffline \<channel\>
 Notifies you when `channel` stops streaming. Useful for planning maintenance or remembering
 to speak to someone when they go offline for the day.
 
