@@ -103,6 +103,9 @@ function setupAuthenticatedSocket(socket) {
 		} else {
 			chatClient.join(channel).then(() => {
 				fn(null, null);
+			}).catch(error => {
+				log.error(`Error attempting to join "${channel}" from join command.\n\t`, error);
+				fn(error);
 			});
 		}
 	});
@@ -116,6 +119,9 @@ function setupAuthenticatedSocket(socket) {
 	socket.on('say', (channel, message, fn) => {
 		chatClient.say(channel, message).then(() => {
 			fn(null, null);
+		}).catch(error => {
+			log.error(`Error attempting to "say" in channel "${channel}".\n\tMessage: ${message}\n\t`, error);
+			fn(error);
 		});
 	});
 
@@ -130,6 +136,9 @@ function setupAuthenticatedSocket(socket) {
 	socket.on('timeout', (channel, username, seconds, fn) => {
 		chatClient.timeout(channel, username, seconds).then(() => {
 			fn(null, null);
+		}).catch(error => {
+			log.error(`Error attempting to timeout user "${username}" in channel "${channel}" for ${seconds} seconds.\n\t`, error);
+			fn(error);
 		});
 	});
 
@@ -141,6 +150,9 @@ function setupAuthenticatedSocket(socket) {
 	socket.on('mods', (channel, fn) => {
 		chatClient.mods(channel).then(mods => {
 			fn(null, mods);
+		}).catch(error => {
+			log.error(`Error attempting to get list of mods in channel "${channel}".\n\t`, error);
+			fn(error);
 		});
 	});
 
@@ -153,7 +165,9 @@ function setupAuthenticatedSocket(socket) {
 		// If we're not in any of these channels, join them.
 		channels.forEach(channel => {
 			if (chatClient.channels.indexOf(channel) < 0) {
-				chatClient.join(channel);
+				chatClient.join(channel).catch(error => {
+					log.error(`Error attempting to join "${channel}" from heartbeat.\n\t`, error);
+				});
 			}
 		});
 
