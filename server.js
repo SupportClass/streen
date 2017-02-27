@@ -164,7 +164,7 @@ function setupAuthenticatedSocket(socket) {
 	socket.on('heartbeat', (channels, fn) => {
 		// If we're not in any of these channels, join them.
 		channels.forEach(channel => {
-			if (chatClient.channels.indexOf(channel) < 0) {
+			if (chatClient.channels.indexOf(`#${channel}`) < 0) {
 				chatClient.join(channel).catch(error => {
 					log.error(`Error attempting to join "${channel}" from heartbeat.\n\t`, error);
 				});
