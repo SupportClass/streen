@@ -97,7 +97,7 @@ function setupAuthenticatedSocket(socket) {
 			socket.join(roomName);
 		}
 
-		if (chatClient.channels.indexOf(channel) >= 0) {
+		if (chatClient.channels.indexOf(`#${channel}`) >= 0) {
 			// Already in channel, invoke callback with the name
 			fn(null, channel);
 		} else {
