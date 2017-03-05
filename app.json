@@ -25,10 +25,10 @@
 	],
 	"buildpacks": [
 		{
-			"url": "https://github.com/vpzomtrrfrt/buildpack-node-npm-deploy-tasks"
+			"url": "heroku/nodejs"
 		},
 		{
-			"url": "heroku/nodejs"
+			"url": "https://github.com/vpzomtrrfrt/buildpack-node-npm-deploy-tasks"
 		}
 	],
 	"env": {
