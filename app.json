@@ -18,7 +18,24 @@
 			"size": "free"
 		}
 	},
+	"addons": [
+		{
+			"plan": "heroku-postgresql:hobby-dev"
+		}
+	],
+	"buildpacks": [
+		{
+			"url": "https://github.com/vpzomtrrfrt/buildpack-node-npm-deploy-tasks"
+		},
+		{
+			"url": "heroku/nodejs"
+		}
+	],
 	"env": {
+		"DEPLOY_TASKS": {
+			"description": "A space-separated list of npm scripts to run on each deploy. The \"migrate\" script is used to run the necessary PostgreSQL database migrations.",
+			"value": "migrate"
+		},
 		"SECRET_KEY": {
 			"description": "A secret key, used as a pre-shared key to authenticate clients.",
 			"generator": "secret"

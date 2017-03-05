@@ -11,23 +11,20 @@
   "license": "MIT",
   "dependencies": {
     "@slack/client": "^3.8.1",
-    "bluebird": "^3.4.6",
     "convict": "^2.0.0",
     "eslint": "^3.16.1",
     "eslint-config-xo": "^0.17.0",
     "express": "^4.14.1",
+    "listify": "^1.0.0",
+    "node-pg-migrate": "^1.1.0",
+    "pg-promise": "^5.6.2",
     "request-promise": "^4.1.1",
     "socket.io": "^1.7.2",
     "tmi.js": "^1.1.2",
     "winston": "^2.3.0"
   },
   "engines": {
-    "node": ">=6.0.0"
-  },
-  "now": {
-    "engines": {
-      "node": "6.x.x"
-    }
+    "node": ">=7.6.0"
   },
   "files": [
     "AUTHORS",
@@ -49,6 +46,8 @@
   "scripts": {
     "static": "eslint server.js lib/**/*.js",
     "test": "npm run static && nyc ava --timeout=20s",
-    "start": "node server.js"
+    "start": "node server.js",
+    "create_migration": "pg-migrate create",
+    "migrate": "pg-migrate up"
   }
 }
