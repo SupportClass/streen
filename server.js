@@ -72,7 +72,7 @@ io.on('connection', socket => {
 			setupAuthenticatedSocket(socket);
 			fn(null);
 		} else {
-			log.info('Rejected key "%s" from this socket:\n\t', key, socket);
+			log.info('Rejected key "%s"', key);
 			fn('invalid key');
 		}
 	});
