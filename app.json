@@ -37,7 +37,7 @@
 			"value": "migrate"
 		},
 		"PERSISTENT": {
-			"description": "If true, some application statte (such as the list of channels to monitor via the !notifyoffline command) will be persisted into Postgres."
+			"description": "If true, some application statte (such as the list of channels to monitor via the !notifyoffline command) will be persisted into Postgres.",
 			"value": "true"
 		},
 		"SECRET_KEY": {
