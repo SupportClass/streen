@@ -8,6 +8,9 @@ Streen is useful in situations where multiple processes all need to connect to T
 but the overhead of spinning up multiple and managing multiple chat bots is not acceptable. 
 Streen operates as a single bot and exposes a websocket API.
 
+## Motivation
+I maintain many production [NodeCG](https://github.com/nodecg/nodecg) instances. Most of these NodeCG instances need to connect to Twitch chat for one reason or another. At first, I had each of these NodeCG instances spin up their own [tmi.js](https://docs.tmijs.org/) bot and connect to Twitch chat directly. However, this wound up causing problems whenever a breaking change happened, as I would have to go update tmi.js manually on each of the many deployments. Streen centralizes this external dependency into one place, making it easier to keep up with changes on Twitch's end.
+
 ## Installation
 - [Deploying to Heroku (recommended)](#deploying-to-heroku)
 - [Manual installation](#manual-installation)
