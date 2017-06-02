@@ -67,5 +67,4 @@ to speak to someone when they go offline for the day.
 ![notifyoffline command example](https://i.imgur.com/O7BDy6D.png)
 
 ### License
-Streen is provided under the MIT license, which is available to read in the [LICENSE][] file.
-[license]: LICENSE
+Streen is provided under the MIT license, which is available to read in the [LICENSE](LICENSE) file.
