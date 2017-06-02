@@ -1,4 +1,4 @@
-#Streen [![Build Status](https://travis-ci.org/SupportClass/streen.svg?branch=master)](https://travis-ci.org/SupportClass/streen) [![Coverage Status](https://coveralls.io/repos/github/SupportClass/streen/badge.svg?branch=master)](https://coveralls.io/github/SupportClass/streen?branch=master)
+# Streen [![Build Status](https://travis-ci.org/SupportClass/streen.svg?branch=master)](https://travis-ci.org/SupportClass/streen) [![Coverage Status](https://coveralls.io/repos/github/SupportClass/streen/badge.svg?branch=master)](https://coveralls.io/github/SupportClass/streen?branch=master)
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)  
 
 Streen is a centralized interface for interacting with Twitch Chat. It is essentially a wrapper for 
