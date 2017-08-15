@@ -33,7 +33,7 @@
     "lib/"
   ],
   "devDependencies": {
-    "ava": "^0.21.0",
+    "ava": "^0.22.0",
     "coveralls": "^2.13.1",
     "eslint": "^4.4.0",
     "eslint-config-xo": "^0.18.2",
