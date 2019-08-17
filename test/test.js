@@ -1,4 +1,5 @@
 import test from 'ava';
+import TwitchChatClient from '../lib/twitch_chat'
 
 const config = require('../lib/config');
 const CHANNELS = ['ghentbot'];
@@ -6,7 +7,7 @@ let globalSocket;
 let tmiClient;
 
 test.cb.before(t => {
-	require('../server.js');
+	const server = require('../server.js');
 	globalSocket = require('socket.io-client')(`http://localhost:${config.get('port')}`);
 
 	let socketConnected = false;
@@ -16,7 +17,9 @@ test.cb.before(t => {
 		checkDone();
 	});
 
-	tmiClient = require('../lib/twitch_chat');
+	const client = new TwitchChatClient(server.io, server.HEARTBEAT_TIMEOUT);
+	tmiClient = client.chatClient;
+	client.connect();
 	if (tmiClient.readyState().toUpperCase() === 'OPEN') {
 		tmiClientConnected = true;
 		checkDone();
@@ -62,7 +65,8 @@ test.cb('disallow commands before authentication', t => {
 test.serial.cb('accept valid authentication key', t => {
 	t.plan(1);
 
-	globalSocket.emit('authenticate', 'supersecret', errorMsg => {
+	const key = config.get('secretKey');
+	globalSocket.emit('authenticate', key, errorMsg => {
 		if (errorMsg) {
 			return t.fail(errorMsg);
 		}
@@ -75,7 +79,8 @@ test.serial.cb('accept valid authentication key', t => {
 test.serial.cb('disallow multiple authentication from a single socket', t => {
 	t.plan(1);
 
-	globalSocket.emit('authenticate', 'supersecret', errorMsg => {
+	const key = config.get('secretKey');
+	globalSocket.emit('authenticate', key, errorMsg => {
 		t.is(errorMsg, 'already authenticated');
 		t.end();
 	});

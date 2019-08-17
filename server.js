@@ -6,6 +6,7 @@ const format = require('util').format;
 const app = require('express')();
 const server = require('http').Server(app); // eslint-disable-line new-cap
 const io = require('socket.io')(server);
+const TwitchChatClient = require('./lib/twitch_chat');
 
 server.listen(config.get('port'));
 
@@ -13,14 +14,12 @@ app.get('/', (req, res) => {
 	res.sendStatus(200);
 });
 
-const heartbeatTimeouts = {};
 const HEARTBEAT_TIMEOUT = 15 * 1000;
 const authenticatedSockets = new WeakSet();
 
-module.exports = {app, io, heartbeatTimeouts};
+module.exports = {app, io, HEARTBEAT_TIMEOUT};
 
 // Wait until we've defined module.exports before loading the Twitch IRC and Slack libs
-const chatClient = require('./lib/twitch_chat');
 const slack = (function () {
 	if (config.get('slack.botToken')) {
 		return require('./lib/slack');
@@ -51,9 +50,10 @@ process.on('SIGINT', () => {
 	}, 1000);
 });
 
-chatClient.on('connected', () => {
-	io.emit('connected');
-});
+// Create the TwitchChatClient, restrieve the internal tmi client, and connect to twitch
+const client = new TwitchChatClient(io, HEARTBEAT_TIMEOUT);
+const chatClient = client.chatClient;
+client.connect();
 
 io.on('connection', socket => {
 	log.trace('Socket %s connected.', socket.id);
@@ -88,7 +88,7 @@ function setupAuthenticatedSocket(socket) {
 	 */
 	socket.on('join', (channel, fn) => {
 		log.debug('Socket %s requesting to join Twitch chat channel "%s"', socket.id, channel);
-		resetHeartbeat(channel);
+		client.resetHeartbeat(channel);
 
 		// NOTE 2/1/2017: Rooms are only left when the socket itself is closed. Is this okay? Is this a leak?
 		const roomName = `channel:${channel}`;
@@ -162,16 +162,7 @@ function setupAuthenticatedSocket(socket) {
 	 * @param {heartbeatCallback} fb - The callback to execute after the heartbeat has been registered.
 	 */
 	socket.on('heartbeat', (channels, fn) => {
-		// If we're not in any of these channels, join them.
-		channels.forEach(channel => {
-			if (chatClient.channels.indexOf(`#${channel}`) < 0) {
-				chatClient.join(channel).catch(error => {
-					log.error(`Error attempting to join "${channel}" from heartbeat.\n\t`, error);
-				});
-			}
-		});
-
-		channels.forEach(resetHeartbeat);
+		client.heartbeat(channels);
 		fn(null, HEARTBEAT_TIMEOUT);
 	});
 
@@ -185,22 +176,4 @@ function setupAuthenticatedSocket(socket) {
 	 * send another heartbeat before it times out. In other words, it can only miss
 	 * one consecutive heartbeat.
 	 */
-}
-
-/**
- * Siphons must send a heartbeat every HEARTBEAT_TIMEOUT seconds.
- * Otherwise, their channels are parted.
- * A siphon can miss no more than one consecutive heartbeat.
- * @param {string} channel - The channel to reset the heartbeat for.
- * @returns {undefined}
- */
-function resetHeartbeat(channel) {
-	clearTimeout(heartbeatTimeouts[channel]);
-	heartbeatTimeouts[channel] = setTimeout(() => {
-		log.info('Heartbeat expired for', channel);
-		chatClient.part(channel).then(() => {
-			clearTimeout(heartbeatTimeouts[channel]);
-			delete heartbeatTimeouts[channel];
-		});
-	}, (HEARTBEAT_TIMEOUT * 2) + 1000);
 }

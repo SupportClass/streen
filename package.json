@@ -19,7 +19,7 @@
     "pg-promise": "^5.6.2",
     "request-promise": "^4.2.1",
     "socket.io": "^2.0.3",
-    "tmi.js": "^1.2.1",
+    "tmi.js": "^1.4.5",
     "winston": "^2.3.1"
   },
   "engines": {
@@ -33,11 +33,11 @@
     "lib/"
   ],
   "devDependencies": {
-    "ava": "^0.23.0",
+    "ava": "^0.25.0",
     "coveralls": "^3.0.0",
-    "eslint": "^4.4.0",
+    "eslint": "^6.1.0",
     "eslint-config-xo": "^0.18.2",
-    "eslint-plugin-ava": "^4.2.1",
+    "eslint-plugin-ava": "^7.1.0",
     "mockery": "^2.1.0",
     "nyc": "^11.1.0",
     "socket.io-client": "^2.0.3"
