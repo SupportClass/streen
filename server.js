@@ -91,6 +91,7 @@ function setupAuthenticatedSocket(socket) {
 		client.resetHeartbeat(channel);
 
 		// NOTE 2/1/2017: Rooms are only left when the socket itself is closed. Is this okay? Is this a leak?
+		// Have the socket join the namespace for the channel in order to receive messages.
 		const roomName = `channel:${channel}`;
 		if (Object.keys(socket.rooms).indexOf(roomName) < 0) {
 			log.trace('Socket %s joined room:', socket.id, roomName);
