@@ -9,6 +9,7 @@ const io = require('socket.io')(server);
 const TwitchChatClient = require('./lib/twitch_chat');
 
 server.listen(config.get('port'));
+log.info('Streen running on http://localhost:%s', config.get('port'));
 
 app.get('/', (req, res) => {
 	res.sendStatus(200);
