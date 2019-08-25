@@ -6,7 +6,7 @@ const CHANNELS = ['ghentbot'];
 let globalSocket;
 let tmiClient;
 
-test.cb.before(t => {
+test.before.cb(t => {
 	const server = require('../server.js');
 	globalSocket = require('socket.io-client')(`http://localhost:${config.get('port')}`);
 
