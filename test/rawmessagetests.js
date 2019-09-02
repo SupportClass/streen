@@ -29,7 +29,7 @@ test.before(() => {
 test.beforeEach.cb(t => {
 	const httpServerAddress = httpServer.address();
 
-	tmiClient = new TwitchChatClient(socketServer, 15 * 1000);
+	tmiClient = new TwitchChatClient(socketServer, 15 * 1000, () => {});
 	const address = `http://[${httpServerAddress.address}]:${httpServerAddress.port}`;
 	globalSocket = require('socket.io-client')(address);
 

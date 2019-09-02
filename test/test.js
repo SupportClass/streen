@@ -17,7 +17,7 @@ test.before.cb(t => {
 		checkDone();
 	});
 
-	const client = new TwitchChatClient(server.io, server.HEARTBEAT_TIMEOUT);
+	const client = new TwitchChatClient(server.io, server.HEARTBEAT_TIMEOUT, () => {});
 	tmiClient = client.chatClient;
 	client.connect();
 	if (tmiClient.readyState().toUpperCase() === 'OPEN') {
