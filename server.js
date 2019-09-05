@@ -8,9 +8,6 @@ const server = require('http').Server(app); // eslint-disable-line new-cap
 const io = require('socket.io')(server);
 const TwitchChatClient = require('./lib/twitch_chat');
 
-server.listen(config.get('port'));
-log.info('Streen running on http://localhost:%s', config.get('port'));
-
 app.get('/', (req, res) => {
 	res.sendStatus(200);
 });
@@ -54,30 +51,39 @@ process.on('SIGINT', () => {
 // Create the TwitchChatClient, restrieve the internal tmi client, and connect to twitch
 const client = new TwitchChatClient(io, HEARTBEAT_TIMEOUT, slack.status);
 const chatClient = client.chatClient;
-client.connect();
-
-io.on('connection', socket => {
-	log.trace('Socket %s connected.', socket.id);
-
-	socket.on('authenticate', (key, fn) => {
-		log.debug('Socket %s authenticating with key "%s"', socket.id, key);
-
-		if (authenticatedSockets.has(socket)) {
-			log.debug('Already authenticated');
-			fn('already authenticated');
-			return;
-		}
-
-		if (key === config.get('secretKey')) {
-			log.debug('Accepted key');
-			setupAuthenticatedSocket(socket);
-			fn(null);
-		} else {
-			log.info('Rejected key "%s"', key);
-			fn('invalid key');
-		}
-	});
+client.connect().then(() => {
+	setupServer();
 });
+
+function setupServer() {
+	io.on('connection', socket => {
+		log.trace('Socket %s connected.', socket.id);
+
+		socket.on('authenticate', (key, fn) => {
+			log.debug('Socket %s authenticating with key "%s"', socket.id, key);
+
+			if (authenticatedSockets.has(socket)) {
+				log.debug('Already authenticated');
+				fn('already authenticated');
+				return;
+			}
+
+			if (key === config.get('secretKey')) {
+				log.debug('Accepted key');
+				setupAuthenticatedSocket(socket);
+				fn(null);
+			} else {
+				log.info('Rejected key "%s"', key);
+				fn('invalid key');
+			}
+		});
+	});
+
+	log.info('Socket.IO server initialized');
+
+	server.listen(config.get('port'));
+	log.info('Streen running on http://localhost:%s', config.get('port'));
+}
 
 function setupAuthenticatedSocket(socket) {
 	authenticatedSockets.add(socket);
