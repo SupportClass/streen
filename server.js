@@ -49,7 +49,7 @@ process.on('SIGINT', () => {
 });
 
 // Create the TwitchChatClient, restrieve the internal tmi client, and connect to twitch
-const client = new TwitchChatClient(io, HEARTBEAT_TIMEOUT, slack.status);
+const client = new TwitchChatClient(io, HEARTBEAT_TIMEOUT, slack.status.bind(slack));
 const chatClient = client.chatClient;
 client.connect().then(() => {
 	setupServer();
