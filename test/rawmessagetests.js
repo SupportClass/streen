@@ -146,12 +146,10 @@ test.serial.cb('handle sub gift', t => {
 
 test.serial.cb('handles raids', t => {
 	const raw = '@badge-info=subscriber/46;badges=moderator/1,subscriber/42,partner/1;color=#187FA5;display-name=gsmVoiD;emotes=;flags=;id=9e440621-183a-43a3-ab0d-fdf6c0f22643;login=gsmvoid;mod=1;msg-id=raid;msg-param-displayName=gsmVoiD;msg-param-login=gsmvoid;msg-param-profileImageURL=https://static-cdn.jtvnw.net/jtv_user_pictures/f4cdcadb-9481-41bd-854a-e58aa8489e78-profile_image-70x70.jpeg;msg-param-viewerCount=169;room-id=75502413;subscriber=1;system-msg=169\sraiders\sfrom\sgsmVoiD\shave\sjoined!;tmi-sent-ts=1566261523344;user-id=81764480;user-type=mod :tmi.twitch.tv USERNOTICE #nairomk';
-	globalSocket.on('hosted', data => {
+	globalSocket.on('raided', data => {
 		t.deepEqual(data, {
 			...data,
-			channel: 'nairomk',
-			raid: true,
-			autohost: false
+			channel: 'nairomk'
 		});
 		t.end();
 	});
