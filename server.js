@@ -26,7 +26,8 @@ const slack = (function () {
 	// If the "slack" property is not present in the config, just return function stubs and do nothing.
 	log.info('No "slack" property found in config.json, will not post status to Slack');
 	return {
-		status() {}
+		status() {},
+		register() {}
 	};
 })();
 
@@ -54,6 +55,9 @@ const chatClient = client.chatClient;
 client.connect().then(() => {
 	setupServer();
 });
+
+// register the twitch chat client to slack (if enabled)
+slack.register(chatClient);
 
 function setupServer() {
 	io.on('connection', socket => {
