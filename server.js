@@ -6,18 +6,21 @@ const format = require('util').format;
 const app = require('express')();
 const server = require('http').Server(app); // eslint-disable-line new-cap
 const io = require('socket.io')(server);
-const TwitchChatClient = require('./lib/twitch_chat');
+
+server.listen(config.get('port'));
 
 app.get('/', (req, res) => {
 	res.sendStatus(200);
 });
 
+const heartbeatTimeouts = {};
 const HEARTBEAT_TIMEOUT = 15 * 1000;
 const authenticatedSockets = new WeakSet();
 
-module.exports = {app, io, HEARTBEAT_TIMEOUT};
+module.exports = {app, io, heartbeatTimeouts};
 
 // Wait until we've defined module.exports before loading the Twitch IRC and Slack libs
+const chatClient = require('./lib/twitch_chat');
 const slack = (function () {
 	if (config.get('slack.botToken')) {
 		return require('./lib/slack');
@@ -26,8 +29,7 @@ const slack = (function () {
 	// If the "slack" property is not present in the config, just return function stubs and do nothing.
 	log.info('No "slack" property found in config.json, will not post status to Slack');
 	return {
-		status() {},
-		register() {}
+		status() {}
 	};
 })();
 
@@ -49,45 +51,32 @@ process.on('SIGINT', () => {
 	}, 1000);
 });
 
-// Create the TwitchChatClient, restrieve the internal tmi client, and connect to twitch
-const client = new TwitchChatClient(io, HEARTBEAT_TIMEOUT, slack.status.bind(slack));
-const chatClient = client.chatClient;
-client.connect().then(() => {
-	setupServer();
+chatClient.on('connected', () => {
+	io.emit('connected');
 });
 
-// register the twitch chat client to slack (if enabled)
-slack.register(chatClient);
+io.on('connection', socket => {
+	log.trace('Socket %s connected.', socket.id);
 
-function setupServer() {
-	io.on('connection', socket => {
-		log.trace('Socket %s connected.', socket.id);
+	socket.on('authenticate', (key, fn) => {
+		log.debug('Socket %s authenticating with key "%s"', socket.id, key);
 
-		socket.on('authenticate', (key, fn) => {
-			log.debug('Socket %s authenticating with key "%s"', socket.id, key);
+		if (authenticatedSockets.has(socket)) {
+			log.debug('Already authenticated');
+			fn('already authenticated');
+			return;
+		}
 
-			if (authenticatedSockets.has(socket)) {
-				log.debug('Already authenticated');
-				fn('already authenticated');
-				return;
-			}
-
-			if (key === config.get('secretKey')) {
-				log.debug('Accepted key');
-				setupAuthenticatedSocket(socket);
-				fn(null);
-			} else {
-				log.info('Rejected key "%s"', key);
-				fn('invalid key');
-			}
-		});
+		if (key === config.get('secretKey')) {
+			log.debug('Accepted key');
+			setupAuthenticatedSocket(socket);
+			fn(null);
+		} else {
+			log.info('Rejected key "%s"', key);
+			fn('invalid key');
+		}
 	});
-
-	log.info('Socket.IO server initialized');
-
-	server.listen(config.get('port'));
-	log.info('Streen running on http://localhost:%s', config.get('port'));
-}
+});
 
 function setupAuthenticatedSocket(socket) {
 	authenticatedSockets.add(socket);
@@ -99,10 +88,9 @@ function setupAuthenticatedSocket(socket) {
 	 */
 	socket.on('join', (channel, fn) => {
 		log.debug('Socket %s requesting to join Twitch chat channel "%s"', socket.id, channel);
-		client.resetHeartbeat(channel);
+		resetHeartbeat(channel);
 
 		// NOTE 2/1/2017: Rooms are only left when the socket itself is closed. Is this okay? Is this a leak?
-		// Have the socket join the namespace for the channel in order to receive messages.
 		const roomName = `channel:${channel}`;
 		if (Object.keys(socket.rooms).indexOf(roomName) < 0) {
 			log.trace('Socket %s joined room:', socket.id, roomName);
@@ -174,7 +162,16 @@ function setupAuthenticatedSocket(socket) {
 	 * @param {heartbeatCallback} fb - The callback to execute after the heartbeat has been registered.
 	 */
 	socket.on('heartbeat', (channels, fn) => {
-		client.heartbeat(channels);
+		// If we're not in any of these channels, join them.
+		channels.forEach(channel => {
+			if (chatClient.channels.indexOf(`#${channel}`) < 0) {
+				chatClient.join(channel).catch(error => {
+					log.error(`Error attempting to join "${channel}" from heartbeat.\n\t`, error);
+				});
+			}
+		});
+
+		channels.forEach(resetHeartbeat);
 		fn(null, HEARTBEAT_TIMEOUT);
 	});
 
@@ -188,4 +185,22 @@ function setupAuthenticatedSocket(socket) {
 	 * send another heartbeat before it times out. In other words, it can only miss
 	 * one consecutive heartbeat.
 	 */
+}
+
+/**
+ * Siphons must send a heartbeat every HEARTBEAT_TIMEOUT seconds.
+ * Otherwise, their channels are parted.
+ * A siphon can miss no more than one consecutive heartbeat.
+ * @param {string} channel - The channel to reset the heartbeat for.
+ * @returns {undefined}
+ */
+function resetHeartbeat(channel) {
+	clearTimeout(heartbeatTimeouts[channel]);
+	heartbeatTimeouts[channel] = setTimeout(() => {
+		log.info('Heartbeat expired for', channel);
+		chatClient.part(channel).then(() => {
+			clearTimeout(heartbeatTimeouts[channel]);
+			delete heartbeatTimeouts[channel];
+		});
+	}, (HEARTBEAT_TIMEOUT * 2) + 1000);
 }

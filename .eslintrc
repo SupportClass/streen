@@ -2,7 +2,6 @@
 	"extends": "xo/esnext",
 	"rules": {
 		"camelcase": [0],
-		"capitalized-comments": [0],
-		"max-params": "off"
+		"capitalized-comments": [0]
 	}
 }
