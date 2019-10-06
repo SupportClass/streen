@@ -52,12 +52,13 @@ process.on('SIGINT', () => {
 // Create the TwitchChatClient, restrieve the internal tmi client, and connect to twitch
 const client = new TwitchChatClient(io, HEARTBEAT_TIMEOUT, slack.status.bind(slack));
 const chatClient = client.chatClient;
-client.connect().then(() => {
-	setupServer();
-});
+client.connect();
 
 // register the twitch chat client to slack (if enabled)
 slack.register(chatClient);
+
+// Start the Socket.IO server now that everything else has completed
+setupServer();
 
 function setupServer() {
 	io.on('connection', socket => {
@@ -92,14 +93,16 @@ function setupServer() {
 function setupAuthenticatedSocket(socket) {
 	authenticatedSockets.add(socket);
 
+	// Join Queue maintained for join attempts that occur while connection to twitch is offline
+	let joinQueue = [];
+
 	/**
 	 * Join a Twitch chat channel.
 	 * @param {String} channel - The name of the channel to join. Do not include a leading "#" character.
 	 * @param {Function} fn - The callback to execute after successfully joining the channel.
 	 */
 	socket.on('join', (channel, fn) => {
-		log.debug('Socket %s requesting to join Twitch chat channel "%s"', socket.id, channel);
-		client.resetHeartbeat(channel);
+		const joinRequest = {channel, fn};
 
 		// NOTE 2/1/2017: Rooms are only left when the socket itself is closed. Is this okay? Is this a leak?
 		// Have the socket join the namespace for the channel in order to receive messages.
@@ -108,6 +111,31 @@ function setupAuthenticatedSocket(socket) {
 			log.trace('Socket %s joined room:', socket.id, roomName);
 			socket.join(roomName);
 		}
+
+		if (client.connected) {
+			log.debug('Socket %s requesting to join Twitch chat channel "%s"', socket.id, channel);
+			handleJoin(joinRequest);
+		} else {
+			log.debug('Socket %s requesting to join Twitch chat channel "%s" (Queued)', socket.id, channel);
+			joinQueue.push(joinRequest);
+		}
+	});
+
+	// Flush join queue when connected to twitch
+	chatClient.on('connected', () => {
+		for (const joinRequest of joinQueue) {
+			handleJoin(joinRequest);
+		}
+
+		joinQueue = [];
+	});
+
+	// Internal function to handle a join request.
+	// A join request will be delayed if not connected to twitch.
+	function handleJoin(joinRequest) {
+		const {channel, fn} = joinRequest;
+
+		client.resetHeartbeat(channel);
 
 		if (chatClient.channels.indexOf(`#${channel}`) >= 0) {
 			// Already in channel, invoke callback with the name
@@ -120,7 +148,7 @@ function setupAuthenticatedSocket(socket) {
 				fn(error);
 			});
 		}
-	});
+	}
 
 	/**
 	 * Send a message to a Twitch chat channel as the user specified in the config file.
