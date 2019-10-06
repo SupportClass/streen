@@ -45,7 +45,7 @@
   },
   "scripts": {
     "static": "eslint server.js lib/**/*.js",
-    "test": "npm run static && nyc ava --timeout=20s",
+    "test": "npm run static && nyc ava --timeout=20s --serial",
     "start": "node server.js",
     "create_migration": "pg-migrate create",
     "migrate": "pg-migrate up"
