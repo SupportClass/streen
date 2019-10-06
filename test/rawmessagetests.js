@@ -1,20 +1,22 @@
 import test from 'ava';
 import TwitchChatClient from '../lib/twitch_chat';
 import socketio from 'socket.io';
-import http from 'http';
 import fs from 'fs';
+
+const config = require('../lib/config');
 
 // Example raw data came from log tracking twitch streamers
 
-let httpServer;
 let socketServer;
 
 let tmiClient;
 let globalSocket;
 
 test.before(() => {
-	httpServer = http.createServer().listen();
-	socketServer = socketio(httpServer);
+	const app = require('express')();
+	const server = require('http').Server(app); // eslint-disable-line new-cap
+	socketServer = socketio(server);
+	server.listen(config.get('port'));
 
 	// Create a fake join event where the socket joins the channel.
 	// this allows the socket to receive messages broadcast to a channel
@@ -27,10 +29,8 @@ test.before(() => {
 });
 
 test.beforeEach.cb(t => {
-	const httpServerAddress = httpServer.address();
-
 	tmiClient = new TwitchChatClient(socketServer, 15 * 1000, () => {});
-	const address = `http://[${httpServerAddress.address}]:${httpServerAddress.port}`;
+	const address = `http://localhost:${config.get('port')}`;
 	globalSocket = require('socket.io-client')(address);
 
 	globalSocket.on('connect', () => {
@@ -42,7 +42,6 @@ test.beforeEach.cb(t => {
 // Close servers once all tests have completed
 test.after(() => {
 	socketServer.close();
-	httpServer.close();
 });
 
 test.afterEach(() => {
