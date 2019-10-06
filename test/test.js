@@ -1,5 +1,4 @@
 import test from 'ava';
-import TwitchChatClient from '../lib/twitch_chat'
 
 const config = require('../lib/config');
 const CHANNELS = ['ghentbot'];
@@ -8,34 +7,26 @@ let tmiClient;
 
 test.before.cb(t => {
 	const server = require('../server.js');
+	const client = server.client;
+	tmiClient = client.chatClient;
 	globalSocket = require('socket.io-client')(`http://localhost:${config.get('port')}`);
 
-	let socketConnected = false;
-	let tmiClientConnected = false;
-	globalSocket.on('connect', () => {
-		socketConnected = true;
-		checkDone();
+	// Currently in travis, it does not have a config and thus the twitch chat client never connects.
+	// So these tests have to work even if there is no actual config.
+	// This absolutely needs a refactor but its legacy so here it stays.
+	// Mock a "connected" tmi client that always succeeds joining
+	Object.defineProperty(client, 'connected', {
+		get: () => true
 	});
 
-	const client = new TwitchChatClient(server.io, server.HEARTBEAT_TIMEOUT, () => {});
-	tmiClient = client.chatClient;
-	client.connect();
-	if (tmiClient.readyState().toUpperCase() === 'OPEN') {
-		tmiClientConnected = true;
-		checkDone();
-	} else {
-		tmiClient.once('connected', () => {
-			tmiClientConnected = true;
-			checkDone();
-		});
-	}
+	tmiClient.join = function () {
+		return Promise.resolve();
+	};
 
-	function checkDone() {
-		if (socketConnected && tmiClientConnected) {
-			console.log('Done with setup, commencing tests.');
-			t.end();
-		}
-	}
+	globalSocket.on('connect', () => {
+		console.log('Done with setup, commencing tests.');
+		t.end();
+	});
 });
 
 test.cb('reject invalid authentication key', t => {

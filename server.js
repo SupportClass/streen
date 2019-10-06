@@ -15,8 +15,6 @@ app.get('/', (req, res) => {
 const HEARTBEAT_TIMEOUT = 15 * 1000;
 const authenticatedSockets = new WeakSet();
 
-module.exports = {app, io, HEARTBEAT_TIMEOUT};
-
 // Wait until we've defined module.exports before loading the Twitch IRC and Slack libs
 const slack = (function () {
 	if (config.get('slack.botToken')) {
@@ -60,6 +58,8 @@ slack.register(chatClient);
 // Start the Socket.IO server now that everything else has completed
 setupServer();
 
+module.exports = {app, io, HEARTBEAT_TIMEOUT, client};
+
 function setupServer() {
 	io.on('connection', socket => {
 		log.trace('Socket %s connected.', socket.id);
@@ -102,7 +102,10 @@ function setupAuthenticatedSocket(socket) {
 	 * @param {Function} fn - The callback to execute after successfully joining the channel.
 	 */
 	socket.on('join', (channel, fn) => {
-		const joinRequest = {channel, fn};
+		const joinRequest = {
+			channel,
+			fn: fn || (() => {})
+		};
 
 		// NOTE 2/1/2017: Rooms are only left when the socket itself is closed. Is this okay? Is this a leak?
 		// Have the socket join the namespace for the channel in order to receive messages.
