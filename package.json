@@ -11,7 +11,7 @@
   "license": "MIT",
   "dependencies": {
     "@slack/client": "^3.10.0",
-    "convict": "^4.0.0",
+    "convict": "^6.2.4",
     "express": "^4.15.3",
     "listify": "^1.0.0",
     "node-pg-migrate": "^2.7.0",
